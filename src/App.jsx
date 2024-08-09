@@ -37,7 +37,7 @@ function App() {
   return (
     <>
       <Container>
-        <h1 className="title">Buscador de CEP</h1>
+        <h1 className="title">Consultor de CEP</h1>
         <Row className="d-flex justify-content-center p-3">
 
           <Col md='11'>
