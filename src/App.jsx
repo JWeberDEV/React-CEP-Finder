@@ -21,6 +21,7 @@ function App() {
     maxWidth: "1200px",
   });
   const isDesktop = useMediaQuery({ query: "(min-width: 1224px)" });
+  
 
   async function searchCep() {
     // 999999999/json/
@@ -40,6 +41,12 @@ function App() {
       setLoading(false);
     }
   }
+
+  const onKeyDownHandler = e => {
+    if (e.keyCode === 13) {
+      searchCep();
+    }
+  };
 
   return (
     <>
@@ -89,6 +96,7 @@ function App() {
         </Container>
       )}
       {(isMinDesktop || isDesktop) && (
+      
         <Container>
           <h1 className="title">Consultor de CEP</h1>
           <Row className="d-flex justify-content-center p-3">
@@ -98,6 +106,7 @@ function App() {
                 placeholder="Informe o cep..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDownHandler}
               />
             </Col>
 
