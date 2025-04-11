@@ -2,7 +2,7 @@
 import axios from "axios";
 // configuração da URL base da API que consulta o CEP
 const api = axios.create({
-  baseURL: 'http://viacep.com.br/ws/'
+  baseURL: 'https://viacep.com.br/ws/'
 })
 
 export default api;
