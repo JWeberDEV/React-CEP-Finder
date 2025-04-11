@@ -29,6 +29,11 @@ function App() {
     if (!input) {
       return alert("Infomre o CEP");
     }
+
+    if (input.length > 8) {
+      return alert("CEP invalido");
+    }
+
     //Tratamento de exeções da função do botão
     try {
       setLoading(true);
