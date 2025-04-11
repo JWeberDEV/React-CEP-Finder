@@ -28,8 +28,13 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background: rgb(21,19,20);
-  background: linear-gradient(180deg, rgba(21,19,20,1) 0%, rgba(21,22,26,1) 50%, rgba(14,21,34,1) 100%);
+  background: rgb(21, 19, 20);
+  background: linear-gradient(
+    180deg,
+    rgba(21, 19, 20, 1) 0%,
+    rgba(21, 22, 26, 1) 50%,
+    rgba(14, 21, 34, 1) 100%
+  );
   color: #ffffff !important;
 }
 
@@ -71,7 +76,7 @@ button:focus-visible {
 }
 
 .title {
-  font-size: 85px;
+  font-size: 6rem;
   animation: flipTitle 2s;
 }
 
@@ -79,7 +84,13 @@ button:focus-visible {
   from {
     transform: rotateX(90deg);
   }
-  to{
+  to {
     transform: rotateX(0deg);
+  }
+}
+
+@media only screen and (max-width: 1023px) {
+  .title {
+    font-size: 3rem;
   }
 }
