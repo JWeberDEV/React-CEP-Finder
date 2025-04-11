@@ -46,8 +46,8 @@ function App() {
       {(isMobile || isTablet) && (
         <Container>
           <h4 className="title">Consultor de CEP</h4>
-          <Row className="d-flex justify-content-center p-3">
-            <Col md="5" sm="8">
+          <Row className="d-flex flex-wrap align-items-center justify-content-center p-3">
+            <Col xs='10'>
               <Input
                 type="text"
                 placeholder="Informe o cep..."
@@ -56,7 +56,7 @@ function App() {
               />
             </Col>
 
-            <Col md="1" sm="2">
+            <Col xs='2'>
               {/* ()=>searchCep() exemplo de uma callbak, que serve para não executar a chamada da função no momento em que a aplicação é iniciada*/}
               <Button
                 type="button"

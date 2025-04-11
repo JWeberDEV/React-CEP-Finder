@@ -89,8 +89,14 @@ button:focus-visible {
   }
 }
 
-@media only screen and (max-width: 1023px) {
+@media only screen and (max-width: 767px) {
   .title {
-    font-size: 3rem;
+    font-size: 2.5rem;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1023px) {
+  .title {
+    font-size: 4rem;
   }
 }
