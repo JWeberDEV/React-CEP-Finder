@@ -36,35 +36,6 @@ function App() {
   });
   const isDesktop = useMediaQuery({ query: "(min-width: 1224px)" });
 
-  async function searchCep() {
-    console.log(location);
-
-    if (!input) {
-      return alert("Infomre o CEP");
-    }
-
-    if (input.length > 9) {
-      return alert("CEP invalido");
-    }
-
-    let cep = input.replace("-", "").trim(); //Remove o traço do cep
-
-    //Tratamento de exeções da função do botão
-    try {
-      setLoading(true);
-      const response = await api.get(`${cep}/json`);
-      if (response.data.erro) {
-        throw new Error("CEP não encontrado");
-      }
-      setCep(response.data);
-    } catch (error) {
-      alert("Error: " + error.message);
-    } finally {
-      setInput("");
-      setLoading(false);
-    }
-  }
-
   const getStates = async () => {
     try {
       const response = await api.get(
@@ -73,7 +44,7 @@ function App() {
 
       const options = response.data.map((element) => ({
         value: element.id,
-        label: element.nome,
+        label: element.sigla,
       }));
 
       setStates(options);
@@ -124,6 +95,51 @@ function App() {
       color: "hsla(0, 0%, 40%, 1.00)", // cor do texto selecionado
     }),
   };
+
+  async function searchCep(data) {
+    // Verifica se possui algum valor na variável data.
+    if (data) {
+      console.log(data);
+      try {
+        setLoading(true);
+        const response = await api.get(`${data.state.label}/${data.city.label}/${data.street}/json`);
+        if (response.data.erro) {
+          throw new Error("CEP não encontrado");
+        }
+        setCep(response.data[0]);
+      } catch (error) {
+        alert("Error: " + error.message);
+      } finally {
+        setInput("");
+        setLoading(false);
+      }
+    } else {
+      if (!input) {
+        return alert("Infomre o CEP");
+      }
+
+      if (input.length > 9) {
+        return alert("CEP invalido");
+      }
+
+      let cep = input.replace("-", "").trim(); //Remove o traço do cep
+
+      //Tratamento de exeções da função que busca o cep
+      try {
+        setLoading(true);
+        const response = await api.get(`${cep}/json`);
+        if (response.data.erro) {
+          throw new Error("CEP não encontrado");
+        }
+        setCep(response.data);
+      } catch (error) {
+        alert("Error: " + error.message);
+      } finally {
+        setInput("");
+        setLoading(false);
+      }
+    }
+  }
 
   return (
     <>
@@ -179,42 +195,73 @@ function App() {
         </Container>
       )}
       {(isMinDesktop || isDesktop) && (
-        <Container fluid>
+        <Container>
           <h1 className="title">Consultor de CEP</h1>
           <Row className="d-flex justify-content-center p-3">
             <Col md="8" sm="8">
               {adress ? (
                 <>
-                  <Formik initialValues={formData}>
-                    <Form>
-                      <Row>
-                        <Col md="12" className="text-start">
-                          <Select
-                            className="text-start basic-single"
-                            options={states}
-                            value={location.state}
-                            styles={customStyles}
-                            placeholder="Selecione o estado"
-                            onChange={(e) => getCities(e.value)}
-                          />
-                        </Col>
-                        <Col md="6" className="mt-2 text-start">
-                          <Select
-                            className="text-start basic-single"
-                            options={cities}
-                            value={location.city}
-                            styles={customStyles}
-                            placeholder="Selecione a cidade"
-                          />
-                        </Col>
-                        <Col md="6" className="mt-2">
-                          <Input
-                            placeholder="Informe a rua"
-                            value={location.street}
-                          ></Input>
-                        </Col>
-                      </Row>
-                    </Form>
+                  <Formik initialValues={formData} onSubmit={searchCep}>
+                    {({
+                      values,
+                      errors,
+                      touched,
+                      handleChange,
+                      handleBlur,
+                      handleSubmit,
+                      setFieldValue,
+                      isSubmitting,
+                    }) => (
+                      <Form onSubmit={handleSubmit}>
+                        <Row>
+                          <Col md="10" className="text-start">
+                            <Select
+                              className="text-start"
+                              name="state"
+                              options={states}
+                              value={values.state}
+                              styles={customStyles}
+                              placeholder="Selecione o estado"
+                              onChange={(selected) => {
+                                setFieldValue("state", selected);
+                                getCities(selected.value);
+                              }}
+                            />
+                          </Col>
+                          <Col md="2" className="text-end">
+                            <Button
+                              color="success"
+                              type="submit"
+                              disabled={isSubmitting}
+                            >
+                              <AiOutlineSearch size={25} color="#fff" />
+                            </Button>
+                          </Col>
+                          <Col md="6" className="mt-2 text-start">
+                            <Select
+                              className="text-start"
+                              options={cities}
+                              value={values.city}
+                              styles={customStyles}
+                              placeholder="Selecione a cidade"
+                              handleChange={handleChange}
+                              onChange={(selected) => {
+                                setFieldValue("city", selected);
+                              }}
+                            />
+                          </Col>
+                          <Col md="6" className="mt-2">
+                            <Input
+                              placeholder="Informe a rua"
+                              name="street"
+                              value={values.street}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                            ></Input>
+                          </Col>
+                        </Row>
+                      </Form>
+                    )}
                   </Formik>
                 </>
               ) : (
@@ -227,23 +274,26 @@ function App() {
                 />
               )}
             </Col>
-
-            <Col md="1" sm="2" className="text-center">
-              {/* ()=>searchCep() exemplo de uma callbak, que serve para não executar a chamada da função no momento em que a aplicação é iniciada*/}
-              <Button
-                type="button"
-                disabled={isLoading}
-                color="success"
-                onClick={() => searchCep()}
-              >
-                {/* O Ternário serve para definir o estado do botão, para quando a função estiver esperando um retorno da requisção. O botão será bloqueádo e aparecerá uma animação para mostrar que está buscando o cep */}
-                {isLoading ? (
-                  <Spinner color="light" type="grow" />
-                ) : (
-                  <AiOutlineSearch size={25} color="#fff" />
-                )}
-              </Button>
-            </Col>
+            {adress ? (
+              <></>
+            ) : (
+              <Col md="1" sm="2" className="text-center">
+                {/* ()=>searchCep() exemplo de uma callbak, que serve para não executar a chamada da função no momento em que a aplicação é iniciada*/}
+                <Button
+                  type="button"
+                  disabled={isLoading}
+                  color="success"
+                  onClick={() => searchCep()}
+                >
+                  {/* O Ternário serve para definir o estado do botão, para quando a função estiver esperando um retorno da requisção. O botão será bloqueádo e aparecerá uma animação para mostrar que está buscando o cep */}
+                  {isLoading ? (
+                    <Spinner color="light" type="grow" />
+                  ) : (
+                    <AiOutlineSearch size={25} color="#fff" />
+                  )}
+                </Button>
+              </Col>
+            )}
             <Col md="3" sm="2" className="text-end">
               <Button
                 type="button"
