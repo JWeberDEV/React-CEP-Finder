@@ -250,8 +250,8 @@ function App() {
             {/* ()=>searchCep() exemplo de uma callbak, que serve para não executar a chamada da função no momento em que a aplicação é iniciada*/}
             <Col
               md={adress ? 2 : 4}
-              xs={adress ? 4 : 10}
-              className={isMobile ? "text-end mt-2" : "text-end"}
+              xs={adress ? 4 : 12}
+              className={isMobile ? "text-center mt-2" : "text-center"}
             >
               {adress ? (
                 <></>
