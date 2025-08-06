@@ -105,12 +105,16 @@ function App() {
         const response = await api.get(
           `${data.state.label}/${data.city.label}/${data.street}/json`
         );
-        if (response.data.erro) {
-          throw new Error("CEP não encontrado");
+        console.log("response:", response.data);
+
+        if (response.data.erro || response.data.length === 0) {
+          toast.error("Cep invalido ou não encontrado", {
+            theme: "dark",
+          });
         }
         setCep(response.data[0]);
       } catch (error) {
-        toast.error(error.message, {
+        toast.error("Cep invalido ou não encontrado", {
           theme: "dark",
         });
       } finally {
@@ -139,6 +143,7 @@ function App() {
       try {
         setLoading(true);
         const response = await api.get(`${cep}/json`);
+
         if (response.data.erro) {
           // Se o cep não for encontrado, exibe um alerta
           toast.warning("CEP não encontrado", {
@@ -147,8 +152,9 @@ function App() {
           return;
         }
         setCep(response.data);
+        console.log("cep:", cep);
       } catch (error) {
-        toast.warning(error.message, {
+        toast.warning("Cep invalido ou não encontrado", {
           theme: "dark",
         });
       } finally {
@@ -244,7 +250,7 @@ function App() {
             {/* ()=>searchCep() exemplo de uma callbak, que serve para não executar a chamada da função no momento em que a aplicação é iniciada*/}
             <Col
               md={adress ? 2 : 4}
-              xs={adress ? 4 : 6}
+              xs={adress ? 4 : 7}
               className={isMobile ? "text-end mt-2" : "text-end"}
             >
               {adress ? (
@@ -279,7 +285,12 @@ function App() {
             </Col>
             {cep && (
               // prop é uma propriedade que você cria para um componente
-              <Col lg="12" md="12" xs="12" className=" border rounded-4 p-3 mt-3 bg-white">
+              <Col
+                lg="12"
+                md="12"
+                xs="12"
+                className=" border rounded-4 p-3 mt-3 bg-white"
+              >
                 <Response
                   cep={cep.cep}
                   logradouro={cep.logradouro}
