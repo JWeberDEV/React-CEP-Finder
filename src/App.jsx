@@ -5,6 +5,7 @@ import { Button, Input, Container, Row, Col, Spinner } from "reactstrap";
 import { useMediaQuery } from "react-responsive";
 import { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
+import { toast } from "react-toastify";
 import Response from "./components/Form";
 import api from "./services/api";
 import Select from "react-select";
@@ -49,9 +50,9 @@ function App() {
 
       setStates(options);
     } catch {
-      // toast.error("Não foi possível carregar os setores", {
-      //   theme: "colored",
-      // });
+      toast.error("Não foi possível carregar os estados", {
+        theme: "dark",
+      });
     }
   };
 
@@ -68,9 +69,9 @@ function App() {
 
       setCities(options);
     } catch {
-      // toast.error("Não foi possível carregar os setores", {
-      //   theme: "colored",
-      // });
+      toast.error("Não foi possível carregar as cidades", {
+        theme: "dark",
+      });
     }
   };
 
@@ -99,27 +100,37 @@ function App() {
   async function searchCep(data) {
     // Verifica se possui algum valor na variável data.
     if (data) {
-      console.log(data);
       try {
         setLoading(true);
-        const response = await api.get(`${data.state.label}/${data.city.label}/${data.street}/json`);
+        const response = await api.get(
+          `${data.state.label}/${data.city.label}/${data.street}/json`
+        );
         if (response.data.erro) {
           throw new Error("CEP não encontrado");
         }
         setCep(response.data[0]);
       } catch (error) {
-        alert("Error: " + error.message);
+        toast.error(error.message, {
+          theme: "dark",
+        });
       } finally {
         setInput("");
         setLoading(false);
       }
     } else {
+      // Verifica se o input está vazio ou se o tamanho do input é maior que 9 caracteres
       if (!input) {
-        return alert("Infomre o CEP");
+        toast.warning("Infomre o CEP", {
+          theme: "dark",
+        });
+        return;
       }
-
+      // Verifica se o tamanho do input é maior que 9 caracteres
       if (input.length > 9) {
-        return alert("CEP invalido");
+        toast.warning("CEP invalido", {
+          theme: "dark",
+        });
+        return;
       }
 
       let cep = input.replace("-", "").trim(); //Remove o traço do cep
@@ -129,11 +140,17 @@ function App() {
         setLoading(true);
         const response = await api.get(`${cep}/json`);
         if (response.data.erro) {
-          throw new Error("CEP não encontrado");
+          // Se o cep não for encontrado, exibe um alerta
+          toast.warning("CEP não encontrado", {
+            theme: "dark",
+          });
+          return;
         }
         setCep(response.data);
       } catch (error) {
-        alert("Error: " + error.message);
+        toast.warning(error.message, {
+          theme: "dark",
+        });
       } finally {
         setInput("");
         setLoading(false);
@@ -147,41 +164,123 @@ function App() {
         <Container>
           <h4 className="title">Consultor de CEP</h4>
           <Row className="d-flex flex-wrap align-items-center justify-content-center p-3">
-            <Col xs="7">
-              <Input
-                type="text"
-                placeholder="Informe o cep..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-              />
+            <Col md="8" xs="12" className="px-0">
+              {adress ? (
+                <>
+                  <Formik initialValues={formData} onSubmit={searchCep}>
+                    {({
+                      values,
+                      errors,
+                      touched,
+                      handleChange,
+                      handleBlur,
+                      handleSubmit,
+                      setFieldValue,
+                      isSubmitting,
+                    }) => (
+                      <Form onSubmit={handleSubmit}>
+                        <Row>
+                          <Col md="10" xs="9" className="text-start">
+                            <Select
+                              className="text-start"
+                              name="state"
+                              options={states}
+                              value={values.state}
+                              styles={customStyles}
+                              placeholder="Selecione o estado"
+                              onChange={(selected) => {
+                                setFieldValue("state", selected);
+                                getCities(selected.value);
+                              }}
+                            />
+                          </Col>
+                          <Col md="2" xs="2" className="text-end">
+                            <Button
+                              color="success"
+                              type="submit"
+                              disabled={isSubmitting}
+                            >
+                              <AiOutlineSearch size={25} color="#fff" />
+                            </Button>
+                          </Col>
+                          <Col md="12" className="mt-2 text-start">
+                            <Select
+                              className="text-start"
+                              options={cities}
+                              value={values.city}
+                              styles={customStyles}
+                              placeholder="Selecione a cidade"
+                              handleChange={handleChange}
+                              onChange={(selected) => {
+                                setFieldValue("city", selected);
+                              }}
+                            />
+                          </Col>
+                          <Col md="12" className="mt-2">
+                            <Input
+                              placeholder="Informe a rua"
+                              name="street"
+                              value={values.street}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                            ></Input>
+                          </Col>
+                        </Row>
+                      </Form>
+                    )}
+                  </Formik>
+                </>
+              ) : (
+                <Input
+                  type="text"
+                  placeholder="Informe o cep..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={onKeyDownHandler}
+                />
+              )}
             </Col>
 
-            <Col xs="2">
-              {/* ()=>searchCep() exemplo de uma callbak, que serve para não executar a chamada da função no momento em que a aplicação é iniciada*/}
+            {/* ()=>searchCep() exemplo de uma callbak, que serve para não executar a chamada da função no momento em que a aplicação é iniciada*/}
+            <Col
+              md={adress ? 2 : 4}
+              xs={adress ? 4 : 6}
+              className={isMobile ? "text-end mt-2" : "text-end"}
+            >
+              {adress ? (
+                <></>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  color="success"
+                  disabled={isLoading}
+                  onClick={() => searchCep()}
+                  className="me-1"
+                >
+                  {/* O Ternário serve para definir o estado do botão, para quando a função estiver esperando um retorno da requisção. O botão será bloqueádo e aparecerá uma animação para mostrar que está buscando o cep */}
+                  {isLoading ? (
+                    <Spinner color="light" type="grow" />
+                  ) : (
+                    <AiOutlineSearch size={20} color="#fff" />
+                  )}
+                </Button>
+              )}
               <Button
                 type="button"
+                color="primary"
                 size="sm"
-                disabled={isLoading}
-                onClick={() => searchCep()}
+                onClick={() => setAddress((prev) => !prev)}
+                style={{ fontSize: 10 }}
+                className="px-0 py-2"
               >
-                {/* O Ternário serve para definir o estado do botão, para quando a função estiver esperando um retorno da requisção. O botão será bloqueádo e aparecerá uma animação para mostrar que está buscando o cep */}
-                {isLoading ? (
-                  <Spinner color="light" type="grow" />
-                ) : (
-                  <AiOutlineSearch size={25} color="#fff" />
-                )}
-              </Button>
-            </Col>
-            <Col xs="3" className="text-end">
-              <Button className="p-1" style={{ fontSize: 10 }}>
-                {" "}
-                Não sei o Cep
+                {!adress ? "Buscar por endereço" : "Buscar por CEP"}
               </Button>
             </Col>
             {cep && (
               // prop é uma propriedade que você cria para um componente
-              <Col md="12" className=" border rounded-4 p-3 mt-3 bg-white">
-                <Form
+              <Col lg="12" md="12" xs="12" className=" border rounded-4 p-3 mt-3 bg-white">
+                <Response
                   cep={cep.cep}
                   logradouro={cep.logradouro}
                   complemento={cep.complemento}
@@ -306,7 +405,11 @@ function App() {
             </Col>
             {cep && (
               // prop é uma propriedade que você cria ou que já existe para enviar informações de configuração ou valores para um componente
-              <Col md="12" className=" border rounded-4 p-3 mt-3 bg-white">
+              <Col
+                lg="12"
+                md="12"
+                className=" border rounded-4 p-3 mt-3 bg-white"
+              >
                 <Response
                   cep={cep.cep}
                   logradouro={cep.logradouro}
