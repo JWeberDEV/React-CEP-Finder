@@ -105,10 +105,15 @@ function App() {
         const response = await api.get(
           `${data.state.label}/${data.city.label}/${data.street}/json`
         );
-        console.log("response:", response.data);
 
         if (response.data.erro || response.data.length === 0) {
           toast.error("Cep invalido ou não encontrado", {
+            theme: "dark",
+          });
+        }
+
+        if (!response.data[0].logradouro && response.data.length === 1) {
+          toast.success(`${response.data[0].localidade} Possui apenas um CEP`, {
             theme: "dark",
           });
         }
