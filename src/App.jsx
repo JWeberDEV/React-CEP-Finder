@@ -10,7 +10,29 @@ import Response from "./components/Form";
 import api from "./services/api";
 import Select from "react-select";
 
+function useClarity(trackingId) {
+  useEffect(() => {
+    if (!trackingId) return;
+
+    // Cria o script
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.async = true;
+    script.src = `https://www.clarity.ms/tag/${trackingId}`;
+
+    // Adiciona o script no head
+    document.head.appendChild(script);
+
+    // Limpeza quando o componente desmonta
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, [trackingId]);
+}
+
 function App() {
+  useClarity("swvusj71qe");
+
   //Criação de estado que recebe o valor vindo do input
   const [input, setInput] = useState("");
   const [formData] = useState({
