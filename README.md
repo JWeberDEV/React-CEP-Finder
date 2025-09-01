@@ -15,8 +15,7 @@ Um projeto desenvolvido com **React**, utilizando **Formik**, **Reactstrap** e *
 ---
 
 ## 🖼 **Demonstração**
-> (Adicione um print do projeto aqui)
-![Preview do projeto](./assets/preview.png)
+![Preview do projeto](./src/assets/preview.jpg)
 
 ---
 
